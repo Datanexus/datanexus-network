@@ -1,0 +1,16 @@
+#!/bin/sh
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+
+if [ "$1" == "-h" ] ; then
+    echo "Usage:  `basename $0` [-h]\t\thelp"
+    echo "\t`basename $0` [aws]\ttest aws network"
+    exit 0
+fi
+
+if [ $1 == "aws" ]; then
+  export cloud=aws
+  export AWS_PROFILE=svx-ProdA    # set this to the desired AWS profile in ~/.aws/credentials
+fi
+
+echo "testing $cloud instance(s)..."
+./test-network -e "configuration=$cloud-configuration.yml"

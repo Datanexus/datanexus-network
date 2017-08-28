@@ -1,0 +1,51 @@
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+#
+# create VPC, subnets, internet gateway
+---
+- name: creating dedicated VPC
+  ec2_vpc_net:
+    name: "{{ tenant }}_{{ domain }}"
+    cidr_block: "{{ cidr_block }}"
+    region: "{{ region }}"
+    tags: { "Tenant":"{{ tenant }}", "Domain":"{{ domain }}" }
+    tenancy: default
+    state: present
+  register: vpc
+  
+- name: creating private subnet
+  ec2_vpc_subnet:
+    state: present
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ internal_subnet }}"
+    az: '{{ region }}{{ zone }}'
+    tags: { "Name":"datanexus private internal", "Domain":"{{ domain }}" }
+  register: private_subnet
+
+- name: creating public subnet
+  ec2_vpc_subnet:
+    state: present
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ external_subnet }}"
+    az: '{{ region }}{{ zone }}'
+    tags: { "Name":"datanexus public internal", "Domain":"{{ domain }}" }
+  register: public_subnet
+  
+- name: creating subnet default gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: present
+  register: igw
+
+- name: configuring routing
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ region }}"
+    tags: { "Domain":"{{ domain }}" }
+    subnets:
+      - "{{ public_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
