@@ -22,7 +22,7 @@ Replace REGION with your desired AWS region such as `us-east-1` or `ap-southeast
     region: REGION    
 Replace ZONE with the desired AWS availability zone.
 
-    zone: a
+    zone: ZONE
 Replace CIDR_BLOCK and SUBNET with the values in the VPC, e.g., 10.10.0.0/16, 10.10.1.0/24, 10.10.2.0/24. The internal subnet is private and non-routable, the external subnet will outbound routing.
     
     cidr_block: CIDR
