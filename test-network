@@ -1,0 +1,17 @@
+#!/usr/bin/env ansible-playbook
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+#
+# simple test file for verifying network
+---
+- name: verifying vpc
+  vars_files:
+    - "{{ configuration }}"
+  hosts: localhost
+  tasks:
+    - ec2_vpc_net_facts:
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ tenant }}_{{ domain }}"
+      register: vpc_facts
+  
+    - debug: msg="{{ vpc_facts }}"

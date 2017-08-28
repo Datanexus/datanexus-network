@@ -1,0 +1,16 @@
+#!/bin/sh
+# (c) Copyright 2016 DataNexus Inc.  All Rights Reserved. 
+
+export AWS_PROFILE=datanexus    # set this to the desired AWS profile in ~/.aws/credentials
+
+if [ "$1" == "-h" ] ; then
+    echo "Usage:  `basename $0` [-h]\t\thelp"
+    echo "\t`basename $0` [aws]\tuse aws configuration file"
+    exit 0
+fi
+
+if [ $1 == "aws" ]; then
+  export cloud=aws
+fi
+
+./provision-network -e "configuration=$cloud-configuration.yml"
