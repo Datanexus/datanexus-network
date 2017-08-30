@@ -4,13 +4,15 @@
 export AWS_PROFILE=datanexus    # set this to the desired AWS profile in ~/.aws/credentials
 
 if [ "$1" == "-h" ] ; then
-    echo "Usage:  `basename $0` [-h]\t\thelp"
-    echo "\t`basename $0` [aws]\tuse aws configuration file"
-    exit 0
+  echo "Usage:  `basename $0` [-h]\t\thelp"
+  echo "\t`basename $0` [aws | FILE]\tuse aws or FILE configuration file"
+  exit 0
 fi
 
-if [ $1 == "aws" ]; then
-  export cloud=aws
+if [ $1 == "aws" ] || [ $1 == "osp" ]; then
+  export configuration="$1-configuration.yml"
+else
+  export configuration="$1"
 fi
 
-./provision-network -e "configuration=$cloud-configuration.yml"
+./provision-network -e "configuration=$configuration"
