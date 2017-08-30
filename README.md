@@ -41,9 +41,9 @@ To deploy on AWS:
 
     ./deploy aws
     
-You can also run the code on an alternate configuration file, such as `demo-configuration.yml`:
+You can also run the code on an alternate configuration file, such as `aws-demo.yml`:
 
-    AWS_PROFILE=datanexus ./provision-network -e "configuration=demo-configuration.yml"
+    AWS_PROFILE=datanexus ./provision-network -e "configuration=aws-demo.yml"
 
 Expected running times is approximately 3 seconds.
 
@@ -80,3 +80,9 @@ This indicates the `datanexus_development` VPC was successfully created:
             ]
         }
     }
+
+### cleanup
+
+Cleanup:
+    
+    AWS_PROFILE=datanexus ./cleanup-network -e "configuration=aws-demo.yml"    
