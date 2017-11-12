@@ -3,10 +3,10 @@
 
 export AWS_PROFILE=datanexus    # set this to the desired AWS profile in ~/.aws/credentials
 
-if [ "$1" == "-h" ] ; then
-  echo "Usage:  `basename $0` [-h]\t\thelp"
-  echo "\t`basename $0` [aws | FILE]\tuse aws or FILE configuration file"
-  exit 0
+if [ $# -eq 0 ] || [ "$1" == "-h" ] ; then
+    echo "Usage:  `basename $0` [-h]\t\thelp"
+    echo "\t`basename $0` [aws | osp | FILE]\tuse aws, osp, or FILE configuration file"
+    exit 0
 fi
 
 if [ $1 == "aws" ] || [ $1 == "osp" ]; then
