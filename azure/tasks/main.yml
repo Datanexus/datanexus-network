@@ -4,65 +4,49 @@
 ---
 - name: creating dedicated resource group
   azure_rm_resourcegroup:
-    name: "{{ tenant }}_{{ domain }}"
+    name: "{{ project }}_{{ domain }}"
     location: "{{ region }}"
     tags:
       Tenant: "{{ tenant }}"
+      Project: "{{ project }}"
       Domain: "{{ domain }}"
     state: present
   register: resourcegroup
 
-- debug: msg="{{ resource_group }}"
-- pause:
-
-- name: creating CIDR block
+- name: creating virtual network CIDR block
   azure_rm_virtualnetwork:
     state: present
-    name: "{{ tenant }} resource group"
-    resource_group: "{{ resourcegroup.name }}"
+    name: "{{ project }}_{{ domain }}_vnet"
+    resource_group: "{{ resourcegroup.state.name }}"
     address_prefixes_cidr: "{{ cidr_block }}"
     tags:
-      Name: "{{ tenant }} block"
+      Name: "{{ project }}_cidr_block"
+      Project: "{{ project }}"
       Domain: "{{ domain }}"
-  register: private_subnet
+  register: cidr_block
 
 - name: creating private subnet
-  azure_rm_virtualnetwork:
+  azure_rm_subnet:
     state: present
-    name: "{{ tenant }} resource group"
-    resource_group: "{{ resourcegroup.name }}"
-    address_prefixes_cidr: "{{ internal_subnet }}"
+    virtual_network_name: "{{ project }}_{{ domain }}_vnet"
+    name: "{{ project }}_{{ domain }}_private_internal"
+    resource_group: "{{ resourcegroup.state.name }}"
+    address_prefix_cidr: "{{ internal_subnet }}"
     tags:
-      Name: "{{ tenant }} private internal"
+      Name: "{{ project }}_{{ domain }}_private_internal"
+      Project: "{{ project }}"
       Domain: "{{ domain }}"
   register: private_subnet
 
 - name: creating public subnet
-  azure_rm_virtualnetwork:
+  azure_rm_subnet:
     state: present
-    name: "{{ tenant }} resource group"
-    resource_group: "{{ resourcegroup.name }}"
-    address_prefixes_cidr: "{{ external_subnet }}"
+    virtual_network_name: "{{ project }}_{{ domain }}_vnet"
+    name: "{{ project }}_{{ domain }}_public_internal"
+    resource_group: "{{ resourcegroup.state.name }}"
+    address_prefix_cidr: "{{ external_subnet }}"
     tags:
-      Name: "{{ tenant }} public internal"
+      Name: "{{ project }}_{{ domain }}_public_internal"
+      Project: "{{ project }}"
       Domain: "{{ domain }}"
   register: public_subnet
-  
-#
-# - name: creating subnet default gateway
-#   ec2_vpc_igw:
-#     region: "{{ region }}"
-#     vpc_id: "{{ vpc.vpc.id }}"
-#     state: present
-#   register: igw
-#
-# - name: configuring routing
-#   ec2_vpc_route_table:
-#     vpc_id: "{{ vpc.vpc.id }}"
-#     region: "{{ region }}"
-#     tags: { "Domain":"{{ domain }}" }
-#     subnets:
-#       - "{{ public_subnet.subnet.id }}"
-#     routes:
-#       - dest: 0.0.0.0/0
-#         gateway_id: "{{ igw.gateway_id }}"

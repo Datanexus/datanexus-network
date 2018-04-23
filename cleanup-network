@@ -1,0 +1,65 @@
+#!/usr/bin/env ansible-playbook
+# (c) 2016 DataNexus Inc.  All Rights Reserved. 
+#
+# remove network
+---
+- hosts: localhost
+  vars_files:
+    - "{{ configuration }}"
+  gather_facts: true  
+  tasks:
+    - name: retrieving VPC ID for {{ network }} in {{ region }}
+      ec2_vpc_net_facts:
+        region: "{{ region }}"
+        # This filter must map exactly to what we created in the e2_vpc module
+        filters:
+          cidr_block: "{{ cidr_block }}"
+      register: vpc_facts
+
+    - name: gathering {{ region }} available subnets
+      ec2_vpc_subnet_facts:
+        region: "{{ region }}"
+        filters:
+          state: available
+          "tag:Domain": "{{ domain }}"
+      register: subnet_facts
+   
+    - name: removing subnets {{ (vpc_facts.vpcs | selectattr('state', 'equalto', 'available') | map(attribute='id') | list).0 }} in {{ vpc_facts.vpcs.id }}
+      ec2_vpc_subnet:
+        vpc_id: "{{ (vpc_facts.vpcs|selectattr('state', 'equalto', 'available')| map(attribute='id') | list).0 }}"
+        region: "{{ region }}"
+        cidr: "{{ item }}"
+        state: absent
+      with_items: "{{ subnet_facts.subnets | selectattr('state', 'equalto', 'available') | map(attribute='cidr_block') | list }}"
+
+    - name: removing internet gateways associated with {{ vpc_facts.vpcs.id }} in {{ region }}
+      ec2_vpc_igw:
+        region: "{{ region }}"
+        vpc_id: "{{ item }}"
+        state: absent
+      with_items: "{{ vpc_facts.vpcs | selectattr('state', 'equalto', 'available') | map(attribute='id') | list }}"
+        
+    - name: gathering route tables associated with {{ cidr_block }}
+      ec2_vpc_route_table_facts:
+        region: "{{ region }}"
+        filters:
+          vpc-id: "{{ vpc_facts.vpcs.0.id }}"
+          "tag:Domain": "{{ domain }}"
+      register: route_table_facts
+      
+    - name: removing route tables associated with {{ vpc_facts.vpcs.id }} in {{ region }}
+      ec2_vpc_route_table:
+        region: "{{ region }}"
+        # lookup not described as mandatory, but state: absent will not work otherwise
+        lookup: id
+        vpc_id: "{{ vpc_facts.vpcs.0.id }}"
+        route_table_id: "{{ item }}"
+        state: absent
+      with_items: "{{ route_table_facts.route_tables | map(attribute='id') | list }}"
+
+    - name: removing VPC {{ cidr_block }}
+      ec2_vpc_net:
+        state: absent
+        region: "{{ region }}"
+        cidr_block: "{{ cidr_block }}"
+        name: "{{ tenant }}_{{ domain }}"
