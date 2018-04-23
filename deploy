@@ -11,6 +11,13 @@ fi
 
 if [ $1 == "aws" ]; then
   export cloud=aws
+  ./provision-network -e "configuration=$cloud-configuration.yml"
 fi
 
-./provision-network -e "configuration=$cloud-configuration.yml"
+if [ $1 == "azure" ]; then
+  export cloud=azure
+  ./provision-network -e "configuration=$cloud-configuration.yml"
+fi
+
+./provision-network -e "configuration=$1"
+
