@@ -1,0 +1,52 @@
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+#
+# create resource group, subnets, internet gateway
+---
+- name: creating dedicated resource group
+  azure_rm_resourcegroup:
+    name: "{{ project }}_{{ domain }}"
+    location: "{{ region }}"
+    tags:
+      Tenant: "{{ tenant }}"
+      Project: "{{ project }}"
+      Domain: "{{ domain }}"
+    state: present
+  register: resourcegroup
+
+- name: creating virtual network CIDR block
+  azure_rm_virtualnetwork:
+    state: present
+    name: "{{ project }}_{{ domain }}_vnet"
+    resource_group: "{{ resourcegroup.state.name }}"
+    address_prefixes_cidr: "{{ cidr_block }}"
+    tags:
+      Name: "{{ project }}_cidr_block"
+      Project: "{{ project }}"
+      Domain: "{{ domain }}"
+  register: cidr_block
+
+- name: creating private subnet
+  azure_rm_subnet:
+    state: present
+    virtual_network_name: "{{ project }}_{{ domain }}_vnet"
+    name: "{{ project }}_{{ domain }}_private_internal"
+    resource_group: "{{ resourcegroup.state.name }}"
+    address_prefix_cidr: "{{ internal_subnet }}"
+    tags:
+      Name: "{{ project }}_{{ domain }}_private_internal"
+      Project: "{{ project }}"
+      Domain: "{{ domain }}"
+  register: private_subnet
+
+- name: creating public subnet
+  azure_rm_subnet:
+    state: present
+    virtual_network_name: "{{ project }}_{{ domain }}_vnet"
+    name: "{{ project }}_{{ domain }}_public_internal"
+    resource_group: "{{ resourcegroup.state.name }}"
+    address_prefix_cidr: "{{ external_subnet }}"
+    tags:
+      Name: "{{ project }}_{{ domain }}_public_internal"
+      Project: "{{ project }}"
+      Domain: "{{ domain }}"
+  register: public_subnet
