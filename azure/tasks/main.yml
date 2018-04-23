@@ -1,0 +1,68 @@
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+#
+# create resource group, subnets, internet gateway
+---
+- name: creating dedicated resource group
+  azure_rm_resourcegroup:
+    name: "{{ tenant }}_{{ domain }}"
+    location: "{{ region }}"
+    tags:
+      Tenant: "{{ tenant }}"
+      Domain: "{{ domain }}"
+    state: present
+  register: resourcegroup
+
+- debug: msg="{{ resource_group }}"
+- pause:
+
+- name: creating CIDR block
+  azure_rm_virtualnetwork:
+    state: present
+    name: "{{ tenant }} resource group"
+    resource_group: "{{ resourcegroup.name }}"
+    address_prefixes_cidr: "{{ cidr_block }}"
+    tags:
+      Name: "{{ tenant }} block"
+      Domain: "{{ domain }}"
+  register: private_subnet
+
+- name: creating private subnet
+  azure_rm_virtualnetwork:
+    state: present
+    name: "{{ tenant }} resource group"
+    resource_group: "{{ resourcegroup.name }}"
+    address_prefixes_cidr: "{{ internal_subnet }}"
+    tags:
+      Name: "{{ tenant }} private internal"
+      Domain: "{{ domain }}"
+  register: private_subnet
+
+- name: creating public subnet
+  azure_rm_virtualnetwork:
+    state: present
+    name: "{{ tenant }} resource group"
+    resource_group: "{{ resourcegroup.name }}"
+    address_prefixes_cidr: "{{ external_subnet }}"
+    tags:
+      Name: "{{ tenant }} public internal"
+      Domain: "{{ domain }}"
+  register: public_subnet
+  
+#
+# - name: creating subnet default gateway
+#   ec2_vpc_igw:
+#     region: "{{ region }}"
+#     vpc_id: "{{ vpc.vpc.id }}"
+#     state: present
+#   register: igw
+#
+# - name: configuring routing
+#   ec2_vpc_route_table:
+#     vpc_id: "{{ vpc.vpc.id }}"
+#     region: "{{ region }}"
+#     tags: { "Domain":"{{ domain }}" }
+#     subnets:
+#       - "{{ public_subnet.subnet.id }}"
+#     routes:
+#       - dest: 0.0.0.0/0
+#         gateway_id: "{{ igw.gateway_id }}"

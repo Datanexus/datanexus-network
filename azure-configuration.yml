@@ -1,0 +1,13 @@
+# (c) 2016 DataNexus Inc.  All Rights Reserved.
+#
+# example azure instance
+---
+cloud: azure  
+tenant: TENANT
+project: PROJECT
+domain: DOMAIN
+region: REGION
+zone: ZONE
+cidr_block: CIDR_BLOCK
+internal_subnet: SUBNET
+external_subnet: SUBNET
