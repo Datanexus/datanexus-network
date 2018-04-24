@@ -11,3 +11,4 @@
   gather_facts: false
   roles:
     - { role: aws, when: cloud == 'aws' }
+    - { role: azure, when: cloud == 'azure' }
