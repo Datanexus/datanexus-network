@@ -1,5 +1,5 @@
 # network
-community network release
+network release
 ## configuration
 If any _key:value_ pairs don't apply, comment them out or remove them.
 ### aws
